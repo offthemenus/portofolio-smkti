@@ -21,7 +21,7 @@ return [
     'admin' => [
         'email'         => 'admin@mail.com',
         // Placeholder — ganti dengan hash password_hash() milikmu sendiri.
-        'password_hash' => '$2y$12$Jd1zzvZOeqn9i7Mv34RqduGUTZh0U2WUcp.aQ2NaHePSN4Tw.MNOu',
+        'password_hash' => '$2y$12$1n0UNLQoXt0ulSEFD.Z9aOigdElxPySbiDg7/ZUA0W0moT6WSMvkC',
     ],
 
     // Nama cookie sesi, biar tidak pakai default PHPSESSID (best practice ringan).
