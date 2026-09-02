@@ -2,9 +2,28 @@
 
 declare(strict_types=1);
 
-/*
- * Untuk produksi, pindahkan nilai ini ke environment variables.
- * Password di bawah adalah hash dari password demo "password".
+/**
+ * Konfigurasi aplikasi.
+ *
+ * PENTING (produksi):
+ * - Pindahkan nilai-nilai ini ke environment variable (getenv()) atau file
+ *   .env di luar document root, jangan hardcode di repo.
+ * - Ganti ADMIN_PASSWORD_HASH dengan hash akun kamu sendiri. Buat hash baru
+ *   dengan menjalankan sekali saja (lalu hapus filenya):
+ *
+ *     php -r "echo password_hash('password_baru', PASSWORD_DEFAULT), PHP_EOL;"
+ *
+ *   Hash contoh di bawah ini adalah placeholder untuk password "password"
+ *   dan HARUS diganti sebelum deploy.
  */
-const ADMIN_EMAIL = 'admin@mail.com';
-const ADMIN_PASSWORD_HASH = '$2y$12$txK9sQsZCaK34iBwBy.BfeiBqR1p8B3LOqayJNPGCZdN/kxeM2ZQm';
+
+return [
+    'admin' => [
+        'email'         => 'admin@mail.com',
+        // Placeholder — ganti dengan hash password_hash() milikmu sendiri.
+        'password_hash' => '$2y$12$Jd1zzvZOeqn9i7Mv34RqduGUTZh0U2WUcp.aQ2NaHePSN4Tw.MNOu',
+    ],
+
+    // Nama cookie sesi, biar tidak pakai default PHPSESSID (best practice ringan).
+    'session_name' => 'rifky_session',
+];

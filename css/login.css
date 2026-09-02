@@ -1,6 +1,6 @@
 :root {
   --cream: #fffdf7;
-  --card: #fff;
+  --card: #ffffff;
   --ink: #14213d;
   --muted: #6b7080;
   --purple: #7450dc;
@@ -10,42 +10,29 @@
   --border: #e8e4da;
 }
 
-*,
-*::before {
+* {
   box-sizing: border-box;
-}
-
-html {
-  min-height: 100%;
-  -webkit-text-size-adjust: 100%;
+  margin: 0;
+  padding: 0;
 }
 
 body {
   min-height: 100vh;
-  margin: 0;
-  display: grid;
-  place-items: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   padding: 20px;
-  overflow-x: hidden;
   background: var(--cream);
   color: var(--ink);
   font-family: "Space Grotesk", sans-serif;
 }
 
-button,
-input {
-  font: inherit;
-}
-
-.shape,
-.decoration {
+/* Decorative shapes */
+.shape-yellow,
+.shape-pink {
   position: fixed;
-  pointer-events: none;
-  z-index: -1;
-}
-
-.shape {
   border-radius: 50%;
+  z-index: -1;
 }
 
 .shape-yellow {
@@ -64,8 +51,11 @@ input {
   background: var(--pink);
 }
 
-.decoration {
-  animation: float 3s ease-in-out infinite alternate;
+.star,
+.sparkle {
+  position: fixed;
+  font-size: 30px;
+  animation: float 3.5s ease-in-out infinite alternate;
 }
 
 .star {
@@ -73,29 +63,29 @@ input {
   left: 10%;
   color: #e6b91d;
   font-size: 35px;
+  animation-duration: 3s;
 }
 
 .sparkle {
   top: 18%;
   right: 10%;
   color: var(--purple);
-  font-size: 30px;
-  animation-duration: 3.5s;
   animation-direction: alternate-reverse;
 }
 
 @keyframes float {
-  to {
-    transform: translateY(6px);
-  }
-
   from {
     transform: translateY(-6px);
   }
+  to {
+    transform: translateY(6px);
+  }
 }
 
+/* Login card */
 .login-container {
-  width: min(100%, 420px);
+  width: 100%;
+  max-width: 420px;
 }
 
 .login-card {
@@ -103,7 +93,7 @@ input {
   background: var(--card);
   border: 2px solid var(--border);
   border-radius: 28px;
-  box-shadow: 0 18px 45px rgb(34 30 74 / 12%);
+  box-shadow: 0 18px 45px rgba(34, 30, 74, 0.12);
 }
 
 .logo {
@@ -118,8 +108,8 @@ input {
   height: 48px;
   display: grid;
   place-items: center;
-  border-radius: 15px;
   background: var(--yellow);
+  border-radius: 15px;
   font-size: 23px;
   transform: rotate(-7deg);
   box-shadow: 5px 5px 0 var(--purple);
@@ -145,7 +135,6 @@ input {
 }
 
 h1 {
-  margin: 0;
   font-size: 48px;
   line-height: 1;
   letter-spacing: -3px;
@@ -158,6 +147,7 @@ h1 {
   line-height: 1.5;
 }
 
+/* Form */
 .form-group {
   margin-bottom: 18px;
 }
@@ -175,8 +165,8 @@ label {
 
 .input-icon {
   position: absolute;
-  top: 50%;
   left: 15px;
+  top: 50%;
   transform: translateY(-50%);
   color: var(--muted);
   font-size: 20px;
@@ -192,14 +182,12 @@ input {
   background: var(--cream);
   color: var(--ink);
   font-size: 14px;
-  transition:
-    border-color 0.2s,
-    box-shadow 0.2s;
+  transition: 0.2s;
 }
 
 input:focus {
   border-color: var(--purple);
-  box-shadow: 0 0 0 4px rgb(116 80 220 / 12%);
+  box-shadow: 0 0 0 4px rgba(116, 80, 220, 0.12);
 }
 
 input::placeholder {
@@ -214,16 +202,15 @@ input::placeholder {
   align-items: center;
   justify-content: center;
   gap: 8px;
-  border: 0;
+  border: none;
   border-radius: 999px;
   background: var(--purple);
-  color: #fff;
+  color: white;
+  font-size: 14px;
   font-weight: 700;
   cursor: pointer;
   box-shadow: 0 6px 0 var(--purple-dark);
-  transition:
-    transform 0.15s,
-    box-shadow 0.15s;
+  transition: 0.15s;
 }
 
 .login-button:hover {
@@ -237,13 +224,14 @@ input::placeholder {
 }
 
 .login-button i {
-  transition: transform 0.2s;
+  transition: 0.2s;
 }
 
 .login-button:hover i {
   transform: translateX(4px);
 }
 
+/* Toast */
 .toast {
   position: fixed;
   top: 24px;
@@ -254,18 +242,19 @@ input::placeholder {
   padding: 14px 18px;
   border: 2px solid var(--pink);
   border-radius: 16px;
-  background: #fff;
+  background: white;
   color: var(--ink);
   box-shadow: 6px 6px 0 var(--pink);
   opacity: 0;
+  visibility: hidden;
   transform: translateY(-20px);
-  transition:
-    opacity 0.3s ease,
-    transform 0.3s ease;
+  transition: 0.3s ease;
+  z-index: 9999;
 }
 
 .toast.show {
   opacity: 1;
+  visibility: visible;
   transform: translateY(0);
 }
 
@@ -274,6 +263,7 @@ input::placeholder {
   font-size: 22px;
 }
 
+/* Mobile */
 @media (max-width: 600px) {
   .login-card {
     padding: 30px 24px;
@@ -284,20 +274,12 @@ input::placeholder {
   }
 
   .star {
-    top: 8%;
     left: 4%;
+    top: 8%;
   }
 
   .sparkle {
-    top: 10%;
     right: 4%;
-  }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  *,
-  *::before {
-    animation-duration: 0.01ms !important;
-    transition-duration: 0.01ms !important;
+    top: 10%;
   }
 }
