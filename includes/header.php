@@ -7,8 +7,9 @@ require_once __DIR__ . '/../scripts/bootstrap.php';
 $pageTitle = $pageTitle ?? 'Portofolio Rifky';
 $active    = $active ?? '';
 $pageClass = $pageClass ?? '';
-$isLoggedIn = !empty($_SESSION['logged_in']);
-$userEmail  = (string) ($_SESSION['email'] ?? '');
+$currentUser = auth_user();
+$isLoggedIn = $currentUser !== null;
+$userEmail  = $isLoggedIn ? $currentUser['email'] : '';
 ?>
 <!doctype html>
 <html lang="id">

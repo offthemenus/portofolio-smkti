@@ -48,7 +48,7 @@ require __DIR__ . '/includes/header.php';
       </div>
       <div class="profile-title">
         <h2>Rifky Adi Pranata</h2>
-        <span class="badge badge--purple"><?= e($_SESSION['role'] ?? '') ?></span>
+        <span class="badge badge--purple"><?= e($userRole ?? '') ?></span>
       </div>
     </div>
 
@@ -66,7 +66,7 @@ require __DIR__ . '/includes/header.php';
           <div class="item-icon"><i class="ph ph-user-gear"></i></div>
           <div>
             <span class="item-label">Role</span>
-            <span class="item-value"><?= e($_SESSION['role'] ?? '') ?></span>
+            <span class="item-value"><?= e($userRole ?? '') ?></span>
           </div>
         </div>
 

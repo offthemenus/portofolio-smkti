@@ -5,15 +5,20 @@ declare(strict_types=1);
 require __DIR__ . '/scripts/bootstrap.php';
 
 // Sudah login? tidak perlu lihat form login lagi.
-if (!empty($_SESSION['logged_in'])) {
+if (auth_user() !== null) {
     header('Location: index.php');
     exit;
 }
 
 $token = csrf_token();
+
+$reason = (string) ($_GET['reason'] ?? '');
+$flash = match ($reason) {
+    'login' => 'Silakan login terlebih dahulu.',
+    'csrf'  => 'Sesi tidak valid, silakan muat ulang halaman lalu coba lagi.',
+    default => '',
+};
 $hasError = ($_GET['error'] ?? '') === '1';
-$flash = (string) ($_SESSION['flash'] ?? '');
-unset($_SESSION['flash']);
 ?>
 <!doctype html>
 <html lang="id">

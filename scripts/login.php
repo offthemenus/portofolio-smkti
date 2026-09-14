@@ -10,7 +10,7 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
 }
 
 if (!csrf_verify($_POST['csrf_token'] ?? null)) {
-    header('Location: ../login.php?error=1');
+    header('Location: ../login.php?reason=csrf&t=' . time());
     exit;
 }
 
@@ -24,12 +24,8 @@ $isValidPassword = $submittedPassword !== ''
     && password_verify($submittedPassword, $config['admin']['password_hash']);
 
 if ($isValidEmail && $isValidPassword) {
-    // Regenerasi session ID mencegah session fixation setelah login.
-    session_regenerate_id(true);
-
-    $_SESSION['logged_in'] = true;
-    $_SESSION['email']     = $submittedEmail;
-    $_SESSION['role']      = 'admin';
+    // Login stateless: buat cookie autentikasi bertanda tangan (HMAC).
+    auth_login($submittedEmail, 'admin');
 
     header('Location: ../dashboard.php');
     exit;

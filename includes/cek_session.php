@@ -4,14 +4,17 @@ declare(strict_types=1);
 
 require_once __DIR__ . '/../scripts/bootstrap.php';
 
-if (empty($_SESSION['logged_in']) || $_SESSION['logged_in'] !== true) {
-    $_SESSION['flash'] = 'Silakan login terlebih dahulu';
+$currentUser = auth_user();
 
-    header('Location: login.php');
+if ($currentUser === null) {
+    header('Location: login.php?reason=login');
     exit;
 }
 
-if (($_SESSION['role'] ?? '') !== 'admin') {
+$userEmail = $currentUser['email'];
+$userRole  = $currentUser['role'];
+
+if ($userRole !== 'admin') {
     header('Location: akses_ditolak.php');
     exit;
 }

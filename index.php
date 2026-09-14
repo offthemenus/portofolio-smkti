@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 require __DIR__ . '/scripts/bootstrap.php';
 
-$isLoggedIn = !empty($_SESSION['logged_in']);
+$isLoggedIn = auth_user() !== null;
 ?>
 <!doctype html>
 <html lang="id">

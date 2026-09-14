@@ -31,7 +31,7 @@ require __DIR__ . '/includes/header.php';
     <div class="card card--lavender">
       <div class="card-icon"><i class="ph ph-user-gear"></i></div>
       <span class="label">Role akun</span>
-      <span class="value"><span class="badge badge--purple"><?= e($_SESSION['role'] ?? '') ?></span></span>
+      <span class="value"><span class="badge badge--purple"><?= e($userRole ?? '') ?></span></span>
     </div>
 
     <div class="card card--mint">
