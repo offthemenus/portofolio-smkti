@@ -42,7 +42,7 @@ $isLoggedIn = !empty($_SESSION['logged_in']);
   <link
     href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&display=swap"
     rel="stylesheet" />
-  <link rel="stylesheet" href="style.css" />
+  <link rel="stylesheet" href="css/main.css" />
 </head>
 
 <body>
@@ -78,9 +78,9 @@ $isLoggedIn = !empty($_SESSION['logged_in']);
         </ul>
         <div class="nav-actions">
           <?php if ($isLoggedIn): ?>
-            <a href="scripts/logout.php" class="nav-login">
-              <i class="ph ph-sign-out"></i>
-              Logout
+            <a href="dashboard.php" class="nav-login">
+              <i class="ph ph-layout" aria-hidden="true"></i>
+              Dashboard
             </a>
           <?php else: ?>
             <a href="login.php" class="nav-login">
@@ -919,7 +919,7 @@ $isLoggedIn = !empty($_SESSION['logged_in']);
   <script
     src="https://unpkg.com/lenis@1.3.4/dist/lenis.min.js"
     defer></script>
-  <script src="script.js" defer></script>
+  <script src="js/main.js" defer></script>
 </body>
 
 </html>

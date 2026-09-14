@@ -12,6 +12,8 @@ if (!empty($_SESSION['logged_in'])) {
 
 $token = csrf_token();
 $hasError = ($_GET['error'] ?? '') === '1';
+$flash = (string) ($_SESSION['flash'] ?? '');
+unset($_SESSION['flash']);
 ?>
 <!doctype html>
 <html lang="id">
@@ -94,9 +96,9 @@ $hasError = ($_GET['error'] ?? '') === '1';
       </div>
     </main>
 
-    <div id="toast" class="toast<?= $hasError ? ' show' : '' ?>">
+    <div id="toast" class="toast<?= $hasError || $flash !== '' ? ' show' : '' ?>">
       <i class="ph ph-warning-circle"></i>
-      <span>Email atau password salah.</span>
+      <span><?= $flash !== '' ? e($flash) : 'Email atau password salah.' ?></span>
     </div>
 
     <script src="js/login.js" defer></script>

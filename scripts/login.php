@@ -29,8 +29,9 @@ if ($isValidEmail && $isValidPassword) {
 
     $_SESSION['logged_in'] = true;
     $_SESSION['email']     = $submittedEmail;
+    $_SESSION['role']      = 'admin';
 
-    header('Location: ../index.php');
+    header('Location: ../dashboard.php');
     exit;
 }
 
