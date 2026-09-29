@@ -1,8 +1,9 @@
 <?php
 /*
  * Konfigurasi database.
- * Kredensial dibaca dari file .env di root,
- * lalu config/config.local.php (tidak masuk repo),
+ * Kredensial dibaca per kunci dengan urutan:
+ * environment variable asli (Wajib untuk Vercel),
+ * file .env di root, config/config.local.php,
  * terakhir nilai default Laragon lokal.
  */
 
@@ -45,11 +46,16 @@ if (is_file($localPath)) {
     }
 }
 
-$host = $dot['DB_HOST'] ?? $local['DB_HOST'] ?? '127.0.0.1';
-$port = $dot['DB_PORT'] ?? $local['DB_PORT'] ?? '3306';
-$db = $dot['DB_NAME'] ?? $local['DB_NAME'] ?? 'portofolio';
-$user = $dot['DB_USER'] ?? $local['DB_USER'] ?? 'root';
-$pass = $dot['DB_PASS'] ?? $local['DB_PASS'] ?? '';
+$env = getenv('DB_HOST');
+$host = ($env !== false && $env !== '') ? $env : ($dot['DB_HOST'] ?? $local['DB_HOST'] ?? '127.0.0.1');
+$env = getenv('DB_PORT');
+$port = ($env !== false && $env !== '') ? $env : ($dot['DB_PORT'] ?? $local['DB_PORT'] ?? '3306');
+$env = getenv('DB_NAME');
+$db = ($env !== false && $env !== '') ? $env : ($dot['DB_NAME'] ?? $local['DB_NAME'] ?? 'portofolio');
+$env = getenv('DB_USER');
+$user = ($env !== false && $env !== '') ? $env : ($dot['DB_USER'] ?? $local['DB_USER'] ?? 'root');
+$env = getenv('DB_PASS');
+$pass = ($env !== false && $env !== '') ? $env : ($dot['DB_PASS'] ?? $local['DB_PASS'] ?? '');
 
 $charset = 'utf8mb4';
 $dsn = "mysql:host=$host;port=$port;dbname=$db;charset=$charset";
@@ -68,4 +74,4 @@ try {
 }
 
 unset($dot, $envFile, $envLines, $envLine, $sep, $dotKey, $dotVal, $first, $last);
-unset($local, $localPath, $loaded);
+unset($local, $localPath, $loaded, $env);
