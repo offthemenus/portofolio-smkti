@@ -1,1 +1,3 @@
-.opencode
+# Kredensial dan file lokal — jangan masuk repo.
+.env
+config/config.local.php

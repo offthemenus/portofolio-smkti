@@ -1,32 +1,82 @@
 <?php
+/*
+ * Halaman login.
+ * Menampilkan form, memproses POST email dan password,
+ * lalu mengisi session saat kredensial cocok.
+ */
 
-declare(strict_types=1);
-
-require __DIR__ . '/scripts/bootstrap.php';
-
-// Sudah login? tidak perlu lihat form login lagi.
-if (auth_user() !== null) {
-    header('Location: index.php');
-    exit;
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
 }
 
-$token = csrf_token();
+/*
+ * Pengguna yang sudah login tidak perlu melihat form lagi.
+ * Langsung arahkan ke dashboard.
+ */
+if (isset($_SESSION['is_login']) && $_SESSION['is_login'] === true) {
+    header('Location: admin/dashboard.php');
+    exit();
+}
 
-$reason = (string) ($_GET['reason'] ?? '');
-$flash = match ($reason) {
-    'login' => 'Silakan login terlebih dahulu.',
-    'csrf'  => 'Sesi tidak valid, silakan muat ulang halaman lalu coba lagi.',
-    default => '',
-};
-$hasError = ($_GET['error'] ?? '') === '1';
+$config = require __DIR__ . '/config/config.php';
+
+$error = '';
+$message = '';
+
+/*
+ * Ambil pesan redirect sekali pakai lalu hapus.
+ * Mencegah pesan yang sama muncul dua kali.
+ */
+if (isset($_SESSION['message'])) {
+    $message = $_SESSION['message'];
+    unset($_SESSION['message']);
+}
+
+/*
+ * Blok verifikasi utama.
+ * Email dibandingkan langsung, password dicek dengan password_verify.
+ * Session is_login, email, dan role diisi saat keduanya valid.
+ */
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    $email = trim($_POST['email'] ?? '');
+    $password = $_POST['password'] ?? '';
+
+    if ($email === $config['admin_email'] && $password !== '' && password_verify($password, $config['admin_password_hash'])) {
+        $_SESSION['is_login'] = true;
+        $_SESSION['email'] = $email;
+        $_SESSION['role'] = 'admin';
+
+        header('Location: admin/dashboard.php');
+        exit();
+    }
+
+    $error = 'Email atau password salah.';
+}
+
+/*
+ * Kompatibilitas handler lama.
+ * Redirect ?error=1 dari handler login lama tetap ditampilkan sebagai error.
+ */
+if ($error === '' && isset($_GET['error']) && $_GET['error'] === '1') {
+    $error = 'Email atau password salah.';
+}
+
+$pesan = $message !== '' ? $message : $error;
 ?>
 <!doctype html>
 <html lang="id">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <meta name="theme-color" content="#fffdf7" />
 
     <title>Login</title>
+
+    <!-- Tema awal (anti-kedip), lalu token bersama + gaya login. -->
+    <!-- ?v=2 memaksa browser ambil file baru, bukan cache lama. -->
+    <script src="js/theme-early.js?v=2"></script>
 
     <link
       rel="stylesheet"
@@ -36,7 +86,8 @@ $hasError = ($_GET['error'] ?? '') === '1';
       href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&display=swap"
       rel="stylesheet"
     />
-    <link rel="stylesheet" href="css/login.css" />
+    <link rel="stylesheet" href="css/tokens.css?v=2" />
+    <link rel="stylesheet" href="css/login.css?v=2" />
   </head>
 
   <body>
@@ -46,23 +97,30 @@ $hasError = ($_GET['error'] ?? '') === '1';
     <div class="star"><i class="ph ph-star-four"></i></div>
     <div class="sparkle"><i class="ph ph-sparkle"></i></div>
 
+    <a href="index.php" class="back-btn">
+      <i class="ph ph-arrow-left" aria-hidden="true"></i>
+      <span>Kembali</span>
+    </a>
+    <button class="theme-toggle" id="themeToggle" aria-label="Ganti tema terang / gelap">
+      <i class="ph ph-sun" aria-hidden="true"></i>
+      <i class="ph ph-moon" aria-hidden="true"></i>
+    </button>
+
     <main class="login-container">
       <div class="login-card">
         <div class="logo">
           <div class="logo-icon"><i class="ph ph-star-four"></i></div>
           <div class="logo-text">
             Rifky
-            <span>WEB APPLICATION</span>
+            <span>APLIKASI WEB</span>
           </div>
         </div>
 
-        <div class="welcome">Welcome back!</div>
+        <div class="welcome">Selamat datang kembali!</div>
         <h1>Login</h1>
-        <p class="description">Masuk ke akun kamu untuk melanjutkan.</p>
+        <p class="description">Login ke akun Anda untuk melanjutkan.</p>
 
-        <form action="scripts/login.php" method="POST" novalidate>
-          <input type="hidden" name="csrf_token" value="<?= e($token) ?>" />
-
+        <form action="login.php" method="POST">
           <div class="form-group">
             <label for="email">Email</label>
             <div class="input-wrapper">
@@ -101,11 +159,20 @@ $hasError = ($_GET['error'] ?? '') === '1';
       </div>
     </main>
 
-    <div id="toast" class="toast<?= $hasError || $flash !== '' ? ' show' : '' ?>">
-      <i class="ph ph-warning-circle"></i>
-      <span><?= $flash !== '' ? e($flash) : 'Email atau password salah.' ?></span>
-    </div>
+    <?php if ($pesan !== '') : ?>
+      <div id="toast" class="toast show">
+        <i class="ph ph-warning-circle"></i>
+        <span><?= htmlspecialchars($pesan) ?></span>
+      </div>
+    <?php else : ?>
+      <div id="toast" class="toast">
+        <i class="ph ph-warning-circle"></i>
+        <span></span>
+      </div>
+    <?php endif; ?>
 
-    <script src="js/login.js" defer></script>
+    <!-- Toggle tema + toast login. -->
+    <script src="js/theme.js?v=2" defer></script>
+    <script src="js/login.js?v=2" defer></script>
   </body>
 </html>

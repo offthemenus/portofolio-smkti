@@ -1,0 +1,71 @@
+/*
+ * Token warna bersama.
+ * Dimuat pertama, lalu login.css / app.css / main.css menimpa
+ * token khusus halaman bila perlu. Tampilan tidak berubah.
+ */
+:root {
+  --cream: #fffdf7;
+  --card: #ffffff;
+  --card-bg: #ffffff;
+  --ink: #14213d;
+  --muted: #5f6572;
+  --purple: #7450dc;
+  --purple-dark: #5c3bc2;
+  --yellow: #ffe58a;
+  --pink: #ff7fa6;
+  --lavender: #eee7ff;
+  --mint: #dff7ee;
+  --border: #e8e4da;
+  --card-border: #e3ded1;
+  --shadow: 0 14px 30px rgba(34, 30, 74, 0.13);
+  --accent-fg: #ffffff;
+
+  /*
+   * Skala spacing bersama (kelipatan 4).
+   * Pakai variabel ini agar padding/margin konsisten di semua halaman.
+   */
+  --sp-1: 4px;
+  --sp-2: 8px;
+  --sp-3: 12px;
+  --sp-4: 16px;
+  --sp-5: 20px;
+  --sp-6: 24px;
+  --sp-8: 32px;
+  --sp-10: 40px;
+  --sp-12: 48px;
+  --sp-14: 56px;
+  --sp-16: 64px;
+
+  color-scheme: light;
+}
+
+[data-theme="dark"] {
+  --cream: #141226;
+  --card: #1e1b33;
+  --card-bg: #1e1b33;
+  --ink: #eceaf6;
+  --muted: #aeaec6;
+  --purple: #9b7bff;
+  --purple-dark: #5c3bc2;
+  --yellow: #ffe58a;
+  --pink: #ff7fa6;
+  --lavender: #251f42;
+  --mint: #17282a;
+  --border: #312b52;
+  --card-border: #3a3460;
+  --shadow: 0 16px 34px rgba(0, 0, 0, 0.45);
+  --accent-fg: #171130;
+
+  color-scheme: dark;
+}
+
+/* Transisi halus saat ganti tema. */
+html.theme-switching *,
+html.theme-switching *::before,
+html.theme-switching *::after {
+  transition:
+    background-color 0.35s ease,
+    border-color 0.35s ease,
+    color 0.35s ease,
+    box-shadow 0.35s ease !important;
+}

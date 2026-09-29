@@ -1,0 +1,122 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 400">
+                <rect width="400" height="400" fill="#f0e6ff" />
+                <rect
+                  x="30"
+                  y="30"
+                  width="340"
+                  height="340"
+                  rx="22"
+                  fill="#fff"
+                  stroke="#7450dc"
+                  stroke-width="3" />
+                <rect
+                  x="30"
+                  y="30"
+                  width="340"
+                  height="48"
+                  rx="22"
+                  fill="#7450dc" />
+                <rect x="30" y="56" width="340" height="22" fill="#7450dc" />
+                <circle cx="60" cy="54" r="8" fill="#ff5f57" />
+                <circle cx="86" cy="54" r="8" fill="#febc2e" />
+                <circle cx="112" cy="54" r="8" fill="#28c840" />
+                <circle
+                  cx="75"
+                  cy="120"
+                  r="22"
+                  fill="#7450dc"
+                  opacity=".15" />
+                <text
+                  x="75"
+                  y="127"
+                  font-size="20"
+                  fill="#7450dc"
+                  text-anchor="middle"
+                  font-weight="900">
+                  R
+                </text>
+                <rect
+                  x="110"
+                  y="105"
+                  width="220"
+                  height="12"
+                  rx="6"
+                  fill="#7450dc"
+                  opacity=".3" />
+                <rect
+                  x="110"
+                  y="125"
+                  width="140"
+                  height="10"
+                  rx="5"
+                  fill="#e2ddf5" />
+                <line x1="55" y1="175" x2="345" y2="175" stroke="#e2ddf5" />
+                <circle
+                  cx="75"
+                  cy="220"
+                  r="22"
+                  fill="#7450dc"
+                  opacity=".15" />
+                <text
+                  x="75"
+                  y="227"
+                  font-size="20"
+                  fill="#7450dc"
+                  text-anchor="middle"
+                  font-weight="900">
+                  A
+                </text>
+                <rect
+                  x="110"
+                  y="205"
+                  width="200"
+                  height="12"
+                  rx="6"
+                  fill="#7450dc"
+                  opacity=".3" />
+                <rect
+                  x="110"
+                  y="225"
+                  width="180"
+                  height="10"
+                  rx="5"
+                  fill="#e2ddf5" />
+                <rect
+                  x="110"
+                  y="245"
+                  width="120"
+                  height="10"
+                  rx="5"
+                  fill="#e2ddf5" />
+                <line x1="55" y1="285" x2="345" y2="285" stroke="#e2ddf5" />
+                <circle
+                  cx="75"
+                  cy="330"
+                  r="22"
+                  fill="#7450dc"
+                  opacity=".15" />
+                <text
+                  x="75"
+                  y="337"
+                  font-size="20"
+                  fill="#7450dc"
+                  text-anchor="middle"
+                  font-weight="900">
+                  M
+                </text>
+                <rect
+                  x="110"
+                  y="315"
+                  width="180"
+                  height="12"
+                  rx="6"
+                  fill="#7450dc"
+                  opacity=".3" />
+                <rect
+                  x="110"
+                  y="335"
+                  width="160"
+                  height="10"
+                  rx="5"
+                  fill="#e2ddf5" />
+              </svg>

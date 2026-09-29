@@ -1,20 +1,27 @@
 <?php
+/*
+ * Penjaga halaman admin.
+ * Dipakai halaman di folder admin/, redirect naik ke root.
+ * Redirect ke login jika belum login,
+ * redirect ke akses_ditolak jika peran bukan admin.
+ * Menyediakan $userEmail dan $userRole untuk halaman pemanggil.
+ */
 
-declare(strict_types=1);
-
-require_once __DIR__ . '/../scripts/bootstrap.php';
-
-$currentUser = auth_user();
-
-if ($currentUser === null) {
-    header('Location: login.php?reason=login');
-    exit;
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
 }
 
-$userEmail = $currentUser['email'];
-$userRole  = $currentUser['role'];
+if (!isset($_SESSION['is_login']) || $_SESSION['is_login'] !== true) {
+    $_SESSION['message'] = 'Silakan login terlebih dahulu';
 
-if ($userRole !== 'admin') {
-    header('Location: akses_ditolak.php');
-    exit;
+    header('Location: ../login.php');
+    exit();
 }
+
+if ($_SESSION['role'] !== 'admin') {
+    header('Location: ../akses_ditolak.php');
+    exit();
+}
+
+$userEmail = $_SESSION['email'];
+$userRole = $_SESSION['role'];

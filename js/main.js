@@ -1,8 +1,8 @@
 "use strict";
 
-/* ============================================================
-   GUARDS & CONSTANTS
-   ============================================================ */
+/*
+ * Pengaman dan konstanta.
+ */
 const SCROLL_OFFSET = 150;
 const SHRINK_AT = 100;
 const HIDE_AFTER = 160;
@@ -30,9 +30,9 @@ const debounce = (fn, ms) => {
   };
 };
 
-/* ============================================================
-   SHARED STATE
-   ============================================================ */
+/*
+ * State bersama antar fungsi.
+ */
 const rootEl = document.documentElement;
 
 let lenisInstance = null;
@@ -43,37 +43,15 @@ let sectionTops = [];
 let docMax = 1;
 let lastProgress = -1;
 
-/* ============================================================
-   THEME
-   ============================================================ */
-function initTheme() {
-  const themeToggle = $("#themeToggle");
-  const metaTheme = $('meta[name="theme-color"]');
-  const THEME_COLORS = { light: "#fffdf7", dark: "#141226" };
+/*
+ * Tema ditangani js/theme.js bersama.
+ * Stub ini dipertahankan agar boot() di bawah tidak berubah.
+ */
+function initTheme() {}
 
-  const applyTheme = (theme) => {
-    rootEl.classList.add("theme-switching");
-    rootEl.setAttribute("data-theme", theme);
-    if (metaTheme) metaTheme.setAttribute("content", THEME_COLORS[theme]);
-    setTimeout(() => rootEl.classList.remove("theme-switching"), 450);
-  };
-
-  if (!themeToggle) return;
-  themeToggle.addEventListener("click", () => {
-    const next =
-      rootEl.getAttribute("data-theme") === "dark" ? "light" : "dark";
-    applyTheme(next);
-    try {
-      localStorage.setItem("theme", next);
-    } catch (e) {
-      /* localStorage tidak tersedia — abaikan, preferensi tema tidak disimpan. */
-    }
-  });
-}
-
-/* ============================================================
-   MOBILE MENU
-   ============================================================ */
+/*
+ * Menu mobile buka/tutup.
+ */
 function setMenu(open) {
   const menuBtn = $("#menuBtn");
   const navLinks = $("#navLinks");
@@ -114,9 +92,9 @@ function initMenu() {
   }
 }
 
-/* ============================================================
-   SCROLL FX — header state, spy, progress, back-to-top
-   ============================================================ */
+/*
+ * Efek scroll: header, penanda section, progress, tombol atas.
+ */
 function recalcMetrics() {
   const sections = $$("main section[id]");
   sectionTops = sections.map((s) => s.offsetTop);
@@ -221,9 +199,9 @@ function initScrollFX() {
   }
 }
 
-/* ============================================================
-   TYPING EFFECT
-   ============================================================ */
+/*
+ * Efek ketik peran.
+ */
 function startTyping() {
   const roleEl = $("#roleText");
   if (!roleEl || roleEl.dataset.done || reduceMotion) return;
@@ -243,9 +221,9 @@ function startTyping() {
   }, 55);
 }
 
-/* ============================================================
-   MARQUEE — klon grup + pause di luar viewport
-   ============================================================ */
+/*
+ * Marquee: gandakan grup, jeda di luar layar.
+ */
 function initMarquee() {
   const marquee = $(".marquee");
   if (!marquee) return;
@@ -269,9 +247,9 @@ function initMarquee() {
   }
 }
 
-/* ============================================================
-   SMOOTH SCROLL (Lenis — desktop mampu saja)
-   ============================================================ */
+/*
+ * Scroll halus Lenis khusus desktop mampu.
+ */
 function initSmoothScroll() {
   if (!window.Lenis || !canHover || LOW_END || reduceMotion) return;
 
@@ -299,9 +277,9 @@ function initSmoothScroll() {
   });
 }
 
-/* ============================================================
-   CUSTOM CURSOR (desktop mampu saja)
-   ============================================================ */
+/*
+ * Kursor kustom khusus desktop mampu.
+ */
 function initCursor() {
   if (!canHover || coarsePointer || LOW_END || reduceMotion || !hasGsap)
     return;
@@ -656,9 +634,9 @@ function initMotionAnimations() {
   }
 }
 
-/* ============================================================
-   BOOT
-   ============================================================ */
+/*
+ * Jalankan semua inisialisasi.
+ */
 initTheme();
 initMenu();
 initScrollFX();

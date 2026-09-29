@@ -1,10 +1,79 @@
 <?php
+/*
+ * Halaman utama portofolio.
+ * Halaman publik yang menyesuaikan tombol login dan dashboard
+ * berdasarkan status session pengunjung.
+ * Semua konten (profil, pendidikan, teknologi, progres, karya)
+ * dibaca dari database agar seragam dengan halaman admin.
+ */
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
 
-declare(strict_types=1);
+$isLoggedIn = isset($_SESSION['is_login']) && $_SESSION['is_login'] === true;
 
-require __DIR__ . '/scripts/bootstrap.php';
+/*
+ * Ikon dan gaya tiap teknologi untuk halaman publik.
+ * Kunci = nama teknologi persis seperti di database.
+ */
+$techIcons = [
+    'React' => 'atom', 'Laravel' => 'package', 'Spring Boot' => 'leaf',
+    'MySQL' => 'database', 'PostgreSQL' => 'stack', 'MongoDB' => 'plant',
+    'PHP' => 'code', 'HTML/CSS' => 'code',
+];
+$thumbStyles = [
+    'React' => ['thumb--mint', 'blue'], 'Laravel' => ['thumb--lavender', 'green'],
+    'Spring Boot' => ['thumb--peach', 'green'], 'MySQL' => ['thumb--mint', 'green'],
+    'PostgreSQL' => ['thumb--lavender', 'blue'], 'MongoDB' => ['thumb--mint', 'green'],
+    'PHP' => ['thumb--lavender', 'blue'], 'HTML/CSS' => ['thumb--rose', 'pink'],
+];
 
-$isLoggedIn = auth_user() !== null;
+/*
+ * Ambil konten dari database. Jika database mati,
+ * pakai data cadangan agar halaman tetap tampil.
+ */
+try {
+    require __DIR__ . '/config/database.php';
+
+    $dbProfile = $pdo->query('SELECT * FROM profile WHERE id = 1')->fetch();
+    $dbEducations = $pdo->query('SELECT institution, major, is_current FROM educations ORDER BY id')->fetchAll();
+    $dbTechnologies = $pdo->query('SELECT id, name, level FROM technologies ORDER BY id')->fetchAll();
+    $dbCourses = $pdo->query(
+        'SELECT t.name, p.progress_percentage FROM learning_progress p'
+        . ' JOIN technologies t ON t.id = p.technology_id ORDER BY p.id'
+    )->fetchAll();
+    $dbCreations = $pdo->query(
+        'SELECT c.name, c.image_path, c.live_url, t.name AS technology_name FROM creations c'
+        . ' LEFT JOIN technologies t ON t.id = c.technology_id ORDER BY c.id'
+    )->fetchAll();
+    if (!$dbProfile) {
+        throw new Exception('Profil kosong.');
+    }
+} catch (Exception $e) {
+    $dbProfile = [
+        'full_name' => 'Rifky Adi Pranata', 'username' => '@n11790i0',
+        'role' => 'Full-Stack Web Developer', 'country' => 'Indonesia',
+        'bio' => 'Hai! Saya Rifky, seorang siswa di SMKS TI Airlangga, yang berbasis di Samarinda. Saya memiliki spesialisasi dalam membangun aplikasi web yang mengutamakan performa, desain yang aksesibel, dan arsitektur yang bersih.',
+    ];
+    $dbEducations = [
+        ['institution' => 'SMKS TI Airlangga', 'major' => 'PPLG — Pengembangan Perangkat Lunak dan Gim', 'is_current' => 1],
+    ];
+    $dbTechnologies = [
+        ['id' => 1, 'name' => 'React', 'level' => 5], ['id' => 2, 'name' => 'Laravel', 'level' => 3],
+        ['id' => 3, 'name' => 'Spring Boot', 'level' => 4], ['id' => 4, 'name' => 'MySQL', 'level' => 5],
+        ['id' => 5, 'name' => 'PostgreSQL', 'level' => 4], ['id' => 6, 'name' => 'MongoDB', 'level' => 4],
+    ];
+    $dbCourses = [
+        ['name' => 'React', 'progress_percentage' => 100],
+        ['name' => 'Spring Boot', 'progress_percentage' => 40],
+    ];
+    $dbCreations = [
+        ['name' => 'Chirp App', 'image_path' => 'assets/covers/chirp-app.svg', 'live_url' => 'https://test-mvc-framework.freedev.app/', 'technology_name' => 'PHP'],
+        ['name' => 'Memory Game', 'image_path' => 'assets/covers/memory-game.svg', 'live_url' => '', 'technology_name' => 'React'],
+        ['name' => 'REST API', 'image_path' => 'assets/covers/rest-api.svg', 'live_url' => '', 'technology_name' => 'Spring Boot'],
+        ['name' => 'Portofolio', 'image_path' => 'assets/covers/portofolio.svg', 'live_url' => '', 'technology_name' => 'HTML/CSS'],
+    ];
+}
 ?>
 <!doctype html>
 <html lang="id">
@@ -22,18 +91,9 @@ $isLoggedIn = auth_user() !== null;
     rel="icon"
     href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='16' fill='%23ffe58a'/%3E%3Cpath d='M32 10l5.5 16.5L54 32l-16.5 5.5L32 54l-5.5-16.5L10 32l16.5-5.5z' fill='%237450dc'/%3E%3C/svg%3E" />
   <title>Rifky — Portofolio</title>
-  <script>
-    (function () {
-      try {
-        var stored = localStorage.getItem('theme');
-        var prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-        var theme = stored || (prefersDark ? 'dark' : 'light');
-        if (theme === 'dark') document.documentElement.setAttribute('data-theme', 'dark');
-      } catch (e) {
-        /* localStorage tidak tersedia (mode privat, dsb.) — abaikan, pakai tema default. */
-      }
-    })();
-  </script>
+  <!-- Tema awal (anti-kedip), lalu token bersama + gaya utama. -->
+  <!-- ?v=2 memaksa browser ambil file baru, bukan cache lama. -->
+  <script src="js/theme-early.js?v=2"></script>
   <link
     rel="stylesheet"
     href="https://unpkg.com/@phosphor-icons/web@2.1.1/src/regular/style.css" />
@@ -42,27 +102,28 @@ $isLoggedIn = auth_user() !== null;
   <link
     href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&display=swap"
     rel="stylesheet" />
-  <link rel="stylesheet" href="css/main.css" />
+  <link rel="stylesheet" href="css/tokens.css?v=2" />
+  <link rel="stylesheet" href="css/main.css?v=2" />
 </head>
 
 <body>
-  <!-- SCROLL PROGRESS -->
+  <!-- Garis progres scroll. -->
   <div class="scroll-progress" id="scrollProgress" aria-hidden="true"></div>
 
-  <!-- PRELOADER -->
+  <!-- Layar muat awal. -->
   <div class="preloader" id="preloader" aria-hidden="true">
     <div class="preloader-brand">Rifky <span>&copy; 2026</span></div>
     <div class="preloader-count"><span id="preCount">0</span>%</div>
   </div>
 
-  <!-- TEXTURE + CURSOR -->
+  <!-- Tekstur dan kursor kustom. -->
   <div class="grain" aria-hidden="true"></div>
   <div class="cursor-dot" id="cursorDot" aria-hidden="true"></div>
   <div class="cursor-ring" id="cursorRing" aria-hidden="true">
     <span class="cursor-label">View</span>
   </div>
 
-  <!-- NAV -->
+  <!-- Navigasi utama. -->
   <header>
     <div class="container">
       <nav aria-label="Navigasi utama">
@@ -73,12 +134,12 @@ $isLoggedIn = auth_user() !== null;
         <ul class="nav-links" id="navLinks">
           <li><a class="active" href="#beranda">Beranda</a></li>
           <li><a href="#pendidikan">Pendidikan</a></li>
-          <li><a href="#skill">Skill</a></li>
+          <li><a href="#skill">Teknologi</a></li>
           <li><a href="#karya">Karya</a></li>
         </ul>
         <div class="nav-actions">
           <?php if ($isLoggedIn): ?>
-            <a href="dashboard.php" class="nav-login">
+            <a href="admin/dashboard.php" class="nav-login">
               <i class="ph ph-layout" aria-hidden="true"></i>
               Dashboard
             </a>
@@ -111,72 +172,35 @@ $isLoggedIn = auth_user() !== null;
     </div>
   </header>
 
-  <!-- NAV SCRIM -->
+  <!-- Lapisan penutup menu mobile. -->
   <div class="nav-scrim" id="navScrim" aria-hidden="true"></div>
 
   <main>
-    <!-- HERO -->
+    <!-- Hero: foto, nama, dan aksi. -->
     <section class="hero" id="beranda">
       <span class="doodle star doodle--left"><i class="ph ph-star-four"></i></span>
       <span class="doodle doodle--right"><i class="ph ph-sparkle"></i></span>
       <div class="container hero-grid">
         <div class="hero-photo" aria-label="Foto profil ilustratif">
           <div class="avatar">
-            <svg
-              viewBox="0 0 500 500"
-              role="img"
-              aria-label="Ilustrasi foto profil">
-              <rect width="500" height="500" fill="#e0e7ff" />
-              <circle cx="250" cy="270" r="155" fill="#f7c9b7" />
-              <path
-                d="M100 265c-25-120 35-210 151-210 105 0 157 72 145 186-45-52-82-75-133-79-62-5-113 34-163 103z"
-                fill="#2d3748" />
-              <path
-                d="M112 258c5-93 64-153 143-153 78 0 129 54 139 136-35-33-67-53-107-56-66-5-119 28-175 73z"
-                fill="#4a5568" />
-              <ellipse cx="195" cy="275" rx="10" ry="14" fill="#17213b" />
-              <ellipse cx="306" cy="275" rx="10" ry="14" fill="#17213b" />
-              <circle cx="191" cy="271" r="3" fill="#fff" />
-              <circle cx="302" cy="271" r="3" fill="#fff" />
-              <path
-                d="M220 327q30 23 60 0"
-                fill="none"
-                stroke="#d16d7f"
-                stroke-width="8"
-                stroke-linecap="round" />
-              <circle cx="160" cy="310" r="18" fill="#f39aa4" opacity=".5" />
-              <circle cx="340" cy="310" r="18" fill="#f39aa4" opacity=".5" />
-              <path d="M150 390q100-70 200 0l50 110H100z" fill="#7450dc" />
-              <path
-                d="M120 420q55-45 130-24 74-21 130 24v80H120z"
-                fill="#8b6cf0" />
-              <path
-                d="M164 211q37-50 88-52 50 2 87 52"
-                fill="none"
-                stroke="#2d3748"
-                stroke-width="17"
-                stroke-linecap="round" />
-            </svg>
+            <img src="assets/avatar.svg" alt="Ilustrasi foto profil" width="500" height="500" loading="eager" />
           </div>
           <div class="speech"><i class="ph ph-heart"></i></div>
         </div>
 
         <div class="hero-copy" id="tentang">
-          <div class="eyebrow">@n11790i0</div>
-          <h2 id="heroName">Rifky Adi Pranata</h2>
+          <div class="eyebrow"><?= htmlspecialchars($dbProfile['username']) ?></div>
+          <h2 id="heroName"><?= htmlspecialchars($dbProfile['full_name']) ?></h2>
           <div
             class="role"
             id="roleText"
-            aria-label="Full-Stack Web Developer">
-            Full-Stack Web Developer
+            aria-label="<?= htmlspecialchars($dbProfile['role']) ?>">
+            <?= htmlspecialchars($dbProfile['role']) ?>
           </div>
           <p class="bio">
-            Hai! Saya Rifky, seorang siswa di SMKS TI Airlangga, yang berbasis
-            di Samarinda. Saya memiliki spesialisasi dalam membangun aplikasi
-            web yang mengutamakan performa, desain yang aksesibel, dan
-            arsitektur yang bersih.
+            <?= htmlspecialchars($dbProfile['bio']) ?>
           </p>
-          <div class="location"><i class="ph ph-map-pin"></i> Indonesia</div>
+          <div class="location"><i class="ph ph-map-pin"></i> <?= htmlspecialchars($dbProfile['country']) ?></div>
           <div class="actions">
             <a class="btn btn-primary" href="#karya">Lihat Karya <i class="ph ph-arrow-right"></i></a>
             <a
@@ -187,7 +211,7 @@ $isLoggedIn = auth_user() !== null;
       </div>
     </section>
 
-    <!-- MARQUEE -->
+    <!-- Pita berjalan daftar teknologi. -->
     <div class="marquee" aria-hidden="true">
       <div class="marquee-track">
         <div class="marquee-group">
@@ -196,7 +220,7 @@ $isLoggedIn = auth_user() !== null;
       </div>
     </div>
 
-    <!-- PENDIDIKAN -->
+    <!-- Riwayat pendidikan. -->
     <section id="pendidikan">
       <div class="container">
         <div class="section-head">
@@ -209,120 +233,94 @@ $isLoggedIn = auth_user() !== null;
           </div>
         </div>
         <div class="panel lavender reveal">
+          <?php foreach ($dbEducations as $edu): ?>
           <div class="edu-card">
             <div class="edu-icon"><i class="ph ph-graduation-cap"></i></div>
             <div class="edu-text">
-              <h3>SMKS TI Airlangga</h3>
-              <span class="badge badge--amber">Pelajar Aktif</span>
-              <p>Jurusan PPLG — Pengembangan Perangkat Lunak dan Gim</p>
+              <h3><?= htmlspecialchars($edu['institution']) ?></h3>
+              <?php if (!empty($edu['is_current'])): ?>
+                <span class="badge badge--amber">Pelajar Aktif</span>
+              <?php else: ?>
+                <span class="badge">Selesai</span>
+              <?php endif; ?>
+              <p>Jurusan <?= htmlspecialchars($edu['major']) ?></p>
             </div>
           </div>
+          <?php endforeach; ?>
         </div>
       </div>
     </section>
 
-    <!-- SKILL -->
+    <!-- Teknologi dan progres belajar. -->
     <section id="skill">
       <div class="container two-col">
         <div class="panel mint reveal">
           <div class="sec-meta">
             <span class="sec-num">02</span><span class="sec-line"></span>
           </div>
-          <h2>Skill <i class="ph ph-sparkle"></i></h2>
+          <h2>Teknologi <i class="ph ph-sparkle"></i></h2>
           <div class="skill-list">
-            <div class="skill">
-              <div class="skill-icon"><i class="ph ph-atom"></i></div>
-              <div class="skill-name">React</div>
-              <div class="dots" aria-label="5 dari 6">
-                <i class="dot on"></i><i class="dot on"></i><i class="dot on"></i><i class="dot on"></i><i class="dot on"></i><i class="dot"></i>
+            <?php foreach ($dbTechnologies as $tech): ?>
+              <?php $lvl = max(1, min(6, (int) $tech['level'])); ?>
+              <div class="skill">
+                <div class="skill-icon"><i class="ph ph-<?= htmlspecialchars($techIcons[$tech['name']] ?? 'sparkle') ?>"></i></div>
+                <div class="skill-name"><?= htmlspecialchars($tech['name']) ?></div>
+                <div class="dots" aria-label="<?= $lvl ?> dari 6">
+                  <?php for ($i = 1; $i <= 6; $i++): ?><i class="dot<?= $i <= $lvl ? ' on' : '' ?>"></i><?php endfor; ?>
+                </div>
               </div>
-            </div>
-            <div class="skill">
-              <div class="skill-icon"><i class="ph ph-package"></i></div>
-              <div class="skill-name">Laravel</div>
-              <div class="dots" aria-label="3 dari 6">
-                <i class="dot on"></i><i class="dot on"></i><i class="dot on"></i><i class="dot"></i><i class="dot"></i><i class="dot"></i>
-              </div>
-            </div>
-            <div class="skill">
-              <div class="skill-icon"><i class="ph ph-leaf"></i></div>
-              <div class="skill-name">Spring Boot</div>
-              <div class="dots" aria-label="4 dari 6">
-                <i class="dot on"></i><i class="dot on"></i><i class="dot on"></i><i class="dot"></i><i class="dot"></i><i class="dot"></i>
-              </div>
-            </div>
-            <div class="skill">
-              <div class="skill-icon"><i class="ph ph-database"></i></div>
-              <div class="skill-name">MySQL</div>
-              <div class="dots" aria-label="5 dari 6">
-                <i class="dot on"></i><i class="dot on"></i><i class="dot on"></i><i class="dot on"></i><i class="dot on"></i><i class="dot"></i>
-              </div>
-            </div>
-            <div class="skill">
-              <div class="skill-icon"><i class="ph ph-stack"></i></div>
-              <div class="skill-name">PostgreSQL</div>
-              <div class="dots" aria-label="4 dari 6">
-                <i class="dot on"></i><i class="dot on"></i><i class="dot on"></i><i class="dot on"></i><i class="dot"></i><i class="dot"></i>
-              </div>
-            </div>
-            <div class="skill">
-              <div class="skill-icon"><i class="ph ph-plant"></i></div>
-              <div class="skill-name">MongoDB</div>
-              <div class="dots" aria-label="4 dari 6">
-                <i class="dot on"></i><i class="dot on"></i><i class="dot on"></i><i class="dot on"></i><i class="dot"></i><i class="dot"></i>
-              </div>
-            </div>
+            <?php endforeach; ?>
           </div>
         </div>
 
         <div class="panel lavender reveal">
           <div class="section-head">
             <div>
-              <h2>Progress Belajar <i class="ph ph-star"></i></h2>
+              <div class="sec-meta">
+                <span class="sec-num">03</span><span class="sec-line"></span>
+              </div>
+              <h2>Progres Belajar <i class="ph ph-star"></i></h2>
             </div>
           </div>
           <div class="course-list">
-            <article class="course">
-              <div class="course-icon course-icon--react">
-                <i class="ph ph-atom"></i>
-              </div>
-              <div>
-                <p class="course-title">
-                  React <span class="badge">Selesai</span>
-                </p>
-                <div class="course-meta">
-                  <span>Complete</span><span data-target="100">100%</span>
+            <?php foreach ($dbCourses as $course): ?>
+              <?php
+                $pct = max(0, min(100, (int) $course['progress_percentage']));
+                $done = $pct >= 100;
+                $slug = strtolower(explode(' ', $course['name'])[0]);
+              ?>
+              <article class="course">
+                <div class="course-icon course-icon--<?= htmlspecialchars($slug) ?>">
+                  <i class="ph ph-<?= htmlspecialchars($techIcons[$course['name']] ?? 'sparkle') ?>"></i>
                 </div>
-                <div class="bar"><span data-w="100"></span></div>
-              </div>
-            </article>
-            <article class="course">
-              <div class="course-icon course-icon--spring">
-                <i class="ph ph-leaf"></i>
-              </div>
-              <div>
-                <p class="course-title">
-                  Spring Boot
-                  <span class="badge badge--amber">Sedang Belajar</span>
-                </p>
-                <div class="course-meta">
-                  <span>Progress</span><span data-target="40">40%</span>
+                <div>
+                  <p class="course-title">
+                    <?= htmlspecialchars($course['name']) ?>
+                    <?php if ($done): ?>
+                      <span class="badge">Selesai</span>
+                    <?php else: ?>
+                      <span class="badge badge--amber">Sedang Belajar</span>
+                    <?php endif; ?>
+                  </p>
+                  <div class="course-meta">
+                    <span><?= $done ? 'Selesai' : 'Progres' ?></span><span data-target="<?= $pct ?>"><?= $pct ?>%</span>
+                  </div>
+                  <div class="bar"><span data-w="<?= $pct ?>"></span></div>
                 </div>
-                <div class="bar"><span data-w="40"></span></div>
-              </div>
-            </article>
+              </article>
+            <?php endforeach; ?>
           </div>
         </div>
       </div>
     </section>
 
-    <!-- KARYA -->
+    <!-- Karya terpilih. -->
     <section id="karya">
       <div class="container">
         <div class="section-head">
           <div>
             <div class="sec-meta">
-              <span class="sec-num">03</span><span class="sec-line"></span>
+              <span class="sec-num">04</span><span class="sec-line"></span>
             </div>
             <h2>Karya Terpilih <i class="ph ph-code"></i></h2>
             <p>Beberapa proyek yang pernah saya kerjakan.</p>
@@ -330,536 +328,32 @@ $isLoggedIn = auth_user() !== null;
         </div>
 
         <div class="projects">
-          <a
-            class="card reveal"
-            href="https://test-mvc-framework.freedev.app/"
-            target="_blank"
-            rel="noopener"
-            aria-label="Project Chirp App">
-            <div class="thumb thumb--lavender">
-              <svg viewBox="0 0 400 400">
-                <rect width="400" height="400" fill="#f0e6ff" />
-                <rect
-                  x="30"
-                  y="30"
-                  width="340"
-                  height="340"
-                  rx="22"
-                  fill="#fff"
-                  stroke="#7450dc"
-                  stroke-width="3" />
-                <rect
-                  x="30"
-                  y="30"
-                  width="340"
-                  height="48"
-                  rx="22"
-                  fill="#7450dc" />
-                <rect x="30" y="56" width="340" height="22" fill="#7450dc" />
-                <circle cx="60" cy="54" r="8" fill="#ff5f57" />
-                <circle cx="86" cy="54" r="8" fill="#febc2e" />
-                <circle cx="112" cy="54" r="8" fill="#28c840" />
-                <circle
-                  cx="75"
-                  cy="120"
-                  r="22"
-                  fill="#7450dc"
-                  opacity=".15" />
-                <text
-                  x="75"
-                  y="127"
-                  font-size="20"
-                  fill="#7450dc"
-                  text-anchor="middle"
-                  font-weight="900">
-                  R
-                </text>
-                <rect
-                  x="110"
-                  y="105"
-                  width="220"
-                  height="12"
-                  rx="6"
-                  fill="#7450dc"
-                  opacity=".3" />
-                <rect
-                  x="110"
-                  y="125"
-                  width="140"
-                  height="10"
-                  rx="5"
-                  fill="#e2ddf5" />
-                <line x1="55" y1="175" x2="345" y2="175" stroke="#e2ddf5" />
-                <circle
-                  cx="75"
-                  cy="220"
-                  r="22"
-                  fill="#7450dc"
-                  opacity=".15" />
-                <text
-                  x="75"
-                  y="227"
-                  font-size="20"
-                  fill="#7450dc"
-                  text-anchor="middle"
-                  font-weight="900">
-                  A
-                </text>
-                <rect
-                  x="110"
-                  y="205"
-                  width="200"
-                  height="12"
-                  rx="6"
-                  fill="#7450dc"
-                  opacity=".3" />
-                <rect
-                  x="110"
-                  y="225"
-                  width="180"
-                  height="10"
-                  rx="5"
-                  fill="#e2ddf5" />
-                <rect
-                  x="110"
-                  y="245"
-                  width="120"
-                  height="10"
-                  rx="5"
-                  fill="#e2ddf5" />
-                <line x1="55" y1="285" x2="345" y2="285" stroke="#e2ddf5" />
-                <circle
-                  cx="75"
-                  cy="330"
-                  r="22"
-                  fill="#7450dc"
-                  opacity=".15" />
-                <text
-                  x="75"
-                  y="337"
-                  font-size="20"
-                  fill="#7450dc"
-                  text-anchor="middle"
-                  font-weight="900">
-                  M
-                </text>
-                <rect
-                  x="110"
-                  y="315"
-                  width="180"
-                  height="12"
-                  rx="6"
-                  fill="#7450dc"
-                  opacity=".3" />
-                <rect
-                  x="110"
-                  y="335"
-                  width="160"
-                  height="10"
-                  rx="5"
-                  fill="#e2ddf5" />
-              </svg>
-            </div>
-            <div class="card-body">
-              <h3>Chirp App</h3>
-              <span class="tag blue">PHP</span>
-            </div>
-          </a>
-
-          <a
-            class="card reveal"
-            href="#hall-of-creations"
-            aria-label="Project REST API">
-            <div class="thumb thumb--peach">
-              <svg viewBox="0 0 400 400">
-                <rect width="400" height="400" fill="#ffe5dc" />
-                <rect
-                  x="30"
-                  y="30"
-                  width="340"
-                  height="340"
-                  rx="22"
-                  fill="#171722" />
-                <rect
-                  x="30"
-                  y="30"
-                  width="340"
-                  height="48"
-                  rx="22"
-                  fill="#2d2d3f" />
-                <rect x="30" y="56" width="340" height="22" fill="#2d2d3f" />
-                <circle cx="60" cy="54" r="8" fill="#ff5f57" />
-                <circle cx="86" cy="54" r="8" fill="#febc2e" />
-                <circle cx="112" cy="54" r="8" fill="#28c840" />
-                <text
-                  x="55"
-                  y="110"
-                  font-size="15"
-                  fill="#ff7fa6"
-                  font-family="monospace">
-                  $ curl -X GET /api/users
-                </text>
-                <text
-                  x="55"
-                  y="140"
-                  font-size="15"
-                  fill="#34d399"
-                  font-family="monospace">
-                  200 OK
-                </text>
-                <text
-                  x="55"
-                  y="170"
-                  font-size="15"
-                  fill="#a5b4fc"
-                  font-family="monospace">
-                  {
-                </text>
-                <text
-                  x="70"
-                  y="195"
-                  font-size="15"
-                  fill="#fde68a"
-                  font-family="monospace">
-                  "name": "Rifky",
-                </text>
-                <text
-                  x="70"
-                  y="220"
-                  font-size="15"
-                  fill="#fde68a"
-                  font-family="monospace">
-                  "role": "developer"
-                </text>
-                <text
-                  x="55"
-                  y="245"
-                  font-size="15"
-                  fill="#a5b4fc"
-                  font-family="monospace">
-                  }
-                </text>
-                <line x1="55" y1="270" x2="345" y2="270" stroke="#444" />
-                <text
-                  x="55"
-                  y="300"
-                  font-size="15"
-                  fill="#ff7fa6"
-                  font-family="monospace">
-                  $ curl -X POST /api/users
-                </text>
-                <text
-                  x="55"
-                  y="330"
-                  font-size="15"
-                  fill="#34d399"
-                  font-family="monospace">
-                  201 Created
-                </text>
-                <text
-                  x="55"
-                  y="355"
-                  font-size="15"
-                  fill="#818cf8"
-                  font-family="monospace">
-                  { "id": 1 }
-                </text>
-              </svg>
-            </div>
-            <div class="card-body">
-              <h3>REST API</h3>
-              <span class="tag green">Spring Boot</span>
-            </div>
-          </a>
-
-          <a
-            class="card reveal"
-            href="#hall-of-creations"
-            aria-label="Project Memory Game">
-            <div class="thumb thumb--mint">
-              <svg viewBox="0 0 400 400">
-                <rect width="400" height="400" fill="#e6f9f0" />
-                <rect
-                  x="30"
-                  y="30"
-                  width="340"
-                  height="340"
-                  rx="22"
-                  fill="#fff"
-                  stroke="#2ca89d"
-                  stroke-width="3" />
-                <rect
-                  x="30"
-                  y="30"
-                  width="340"
-                  height="48"
-                  rx="22"
-                  fill="#2ca89d" />
-                <rect x="30" y="56" width="340" height="22" fill="#2ca89d" />
-                <circle cx="60" cy="54" r="8" fill="#ff5f57" />
-                <circle cx="86" cy="54" r="8" fill="#febc2e" />
-                <circle cx="112" cy="54" r="8" fill="#28c840" />
-                <rect
-                  x="55"
-                  y="95"
-                  width="70"
-                  height="70"
-                  rx="14"
-                  fill="#2ca89d" />
-                <text
-                  x="90"
-                  y="138"
-                  font-size="28"
-                  fill="white"
-                  text-anchor="middle"
-                  font-weight="900">
-                  ?
-                </text>
-                <rect
-                  x="140"
-                  y="95"
-                  width="70"
-                  height="70"
-                  rx="14"
-                  fill="#2ca89d"
-                  opacity=".2" />
-                <rect
-                  x="225"
-                  y="95"
-                  width="70"
-                  height="70"
-                  rx="14"
-                  fill="#2ca89d" />
-                <text
-                  x="260"
-                  y="138"
-                  font-size="28"
-                  fill="white"
-                  text-anchor="middle"
-                  font-weight="900">
-                  ?
-                </text>
-                <rect
-                  x="55"
-                  y="180"
-                  width="70"
-                  height="70"
-                  rx="14"
-                  fill="#2ca89d"
-                  opacity=".2" />
-                <rect
-                  x="140"
-                  y="180"
-                  width="70"
-                  height="70"
-                  rx="14"
-                  fill="#2ca89d" />
-                <text
-                  x="175"
-                  y="223"
-                  font-size="28"
-                  fill="white"
-                  text-anchor="middle"
-                  font-weight="900">
-                  ?
-                </text>
-                <rect
-                  x="225"
-                  y="180"
-                  width="70"
-                  height="70"
-                  rx="14"
-                  fill="#2ca89d"
-                  opacity=".2" />
-                <rect
-                  x="55"
-                  y="265"
-                  width="70"
-                  height="70"
-                  rx="14"
-                  fill="#2ca89d" />
-                <text
-                  x="90"
-                  y="308"
-                  font-size="28"
-                  fill="white"
-                  text-anchor="middle"
-                  font-weight="900">
-                  ?
-                </text>
-                <rect
-                  x="140"
-                  y="265"
-                  width="70"
-                  height="70"
-                  rx="14"
-                  fill="#2ca89d"
-                  opacity=".2" />
-                <rect
-                  x="225"
-                  y="265"
-                  width="70"
-                  height="70"
-                  rx="14"
-                  fill="#2ca89d" />
-                <text
-                  x="260"
-                  y="308"
-                  font-size="28"
-                  fill="white"
-                  text-anchor="middle"
-                  font-weight="900">
-                  ?
-                </text>
-                <text
-                  x="340"
-                  y="138"
-                  font-size="24"
-                  fill="#2ca89d"
-                  text-anchor="middle"
-                  font-weight="900">
-                  2
-                </text>
-                <text
-                  x="340"
-                  y="160"
-                  font-size="10"
-                  fill="#888"
-                  text-anchor="middle">
-                  pts
-                </text>
-              </svg>
-            </div>
-            <div class="card-body">
-              <h3>Memory Game</h3>
-              <span class="tag blue">React</span>
-            </div>
-          </a>
-
-          <a
-            class="card reveal"
-            href="#hall-of-creations"
-            aria-label="Project Portofolio">
-            <div class="thumb thumb--rose">
-              <svg viewBox="0 0 400 400">
-                <rect width="400" height="400" fill="#fce4ec" />
-                <rect
-                  x="30"
-                  y="30"
-                  width="340"
-                  height="340"
-                  rx="22"
-                  fill="#fff"
-                  stroke="#ff7fa6"
-                  stroke-width="3" />
-                <rect
-                  x="30"
-                  y="30"
-                  width="340"
-                  height="48"
-                  rx="22"
-                  fill="#ff7fa6" />
-                <rect x="30" y="56" width="340" height="22" fill="#ff7fa6" />
-                <circle cx="60" cy="54" r="8" fill="#ff5f57" />
-                <circle cx="86" cy="54" r="8" fill="#febc2e" />
-                <circle cx="112" cy="54" r="8" fill="#28c840" />
-                <rect
-                  x="55"
-                  y="95"
-                  width="140"
-                  height="16"
-                  rx="8"
-                  fill="#ff7fa6"
-                  opacity=".3" />
-                <rect
-                  x="55"
-                  y="125"
-                  width="280"
-                  height="10"
-                  rx="5"
-                  fill="#ffdce7" />
-                <rect
-                  x="55"
-                  y="145"
-                  width="200"
-                  height="10"
-                  rx="5"
-                  fill="#ffdce7" />
-                <rect
-                  x="55"
-                  y="185"
-                  width="120"
-                  height="32"
-                  rx="16"
-                  fill="#ff7fa6" />
-                <text
-                  x="115"
-                  y="206"
-                  font-size="13"
-                  fill="white"
-                  text-anchor="middle"
-                  font-weight="700">
-                  Projek Saya
-                </text>
-                <rect
-                  x="195"
-                  y="185"
-                  width="100"
-                  height="32"
-                  rx="16"
-                  fill="#ffdce7" />
-                <text
-                  x="245"
-                  y="206"
-                  font-size="13"
-                  fill="#ff7fa6"
-                  text-anchor="middle"
-                  font-weight="700">
-                  Hubungi
-                </text>
-                <rect
-                  x="55"
-                  y="250"
-                  width="130"
-                  height="90"
-                  rx="14"
-                  fill="#ff7fa6"
-                  opacity=".12" />
-                <rect
-                  x="200"
-                  y="250"
-                  width="130"
-                  height="90"
-                  rx="14"
-                  fill="#ff7fa6"
-                  opacity=".12" />
-                <rect
-                  x="265"
-                  y="250"
-                  width="65"
-                  height="90"
-                  rx="14"
-                  fill="#ff7fa6"
-                  opacity=".12" />
-                <rect
-                  x="55"
-                  y="360"
-                  width="280"
-                  height="8"
-                  rx="4"
-                  fill="#ffdce7" />
-              </svg>
-            </div>
-            <div class="card-body">
-              <h3>Portofolio</h3>
-              <span class="tag pink">HTML</span>
-            </div>
-          </a>
+          <?php foreach ($dbCreations as $project): ?>
+            <?php
+              $style = $thumbStyles[$project['technology_name']] ?? ['thumb--lavender', 'blue'];
+              $hasUrl = trim($project['live_url']) !== '';
+            ?>
+            <a
+              class="card reveal"
+              href="<?= $hasUrl ? htmlspecialchars($project['live_url']) : '#hall-of-creations' ?>"
+              <?= $hasUrl ? 'target="_blank" rel="noopener"' : '' ?>
+              aria-label="Project <?= htmlspecialchars($project['name']) ?>">
+              <div class="thumb <?= $style[0] ?>">
+                <?php if (trim($project['image_path']) !== ''): ?>
+                  <img src="<?= htmlspecialchars($project['image_path']) ?>" alt="Ilustrasi <?= htmlspecialchars($project['name']) ?>" width="400" height="400" loading="lazy" />
+                <?php endif; ?>
+              </div>
+              <div class="card-body">
+                <h3><?= htmlspecialchars($project['name']) ?></h3>
+                <span class="tag <?= $style[1] ?>"><?= htmlspecialchars($project['technology_name'] ?? '—') ?></span>
+              </div>
+            </a>
+          <?php endforeach; ?>
         </div>
       </div>
     </section>
 
-    <!-- HALL OF CREATIONS -->
+    <!-- Tautan Hall of Creations. -->
     <section id="hall-of-creations">
       <div class="container">
         <div class="cta reveal">
@@ -868,7 +362,7 @@ $isLoggedIn = auth_user() !== null;
           </div>
           <div>
             <div class="sec-meta">
-              <span class="sec-num">04</span><span class="sec-line"></span>
+              <span class="sec-num">05</span><span class="sec-line"></span>
             </div>
             <h2>Hall of Creations <i class="ph ph-heart"></i></h2>
             <p>Tempat semua karya, proyek, dan cerita pengembangan saya.</p>
@@ -883,14 +377,14 @@ $isLoggedIn = auth_user() !== null;
     </section>
   </main>
 
-  <!-- FOOTER -->
+  <!-- Kaki halaman. -->
   <footer>
     <div class="container footer-inner">
-      <p class="footer-kicker">Punya ide proyek? Mari berkolaborasi</p>
+      <p class="footer-kicker">Have a project idea? Let's collaborate</p>
       <a
         class="footer-mail"
         href="mailto:25_rifkyadi@student.smkti.net"
-        aria-label="Kirim email ke Rifky">
+        aria-label="Send email to Rifky">
         <span class="footer-mail-text">25_rifkyadi@student.smkti.net</span>
         <i class="ph ph-arrow-up-right" aria-hidden="true"></i>
       </a>
@@ -904,11 +398,12 @@ $isLoggedIn = auth_user() !== null;
     </div>
   </footer>
 
-  <!-- BACK TO TOP -->
+  <!-- Tombol kembali ke atas. -->
   <button class="to-top" id="toTop" aria-label="Kembali ke atas">
     <i class="ph ph-arrow-up" aria-hidden="true"></i>
   </button>
 
+  <!-- Library animasi (dipertahankan), lalu tema dan logika utama. -->
   <script src="https://unpkg.com/gsap@3.13.0/dist/gsap.min.js" defer></script>
   <script
     src="https://unpkg.com/gsap@3.13.0/dist/ScrollTrigger.min.js"
@@ -919,7 +414,8 @@ $isLoggedIn = auth_user() !== null;
   <script
     src="https://unpkg.com/lenis@1.3.4/dist/lenis.min.js"
     defer></script>
-  <script src="js/main.js" defer></script>
+  <script src="js/theme.js?v=2" defer></script>
+  <script src="js/main.js?v=2" defer></script>
 </body>
 
 </html>
