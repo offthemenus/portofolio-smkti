@@ -1,6 +1,5 @@
 # Dokumentasi PDO-READ — Tabel Creations
 
-**Nama:** Rifky Adi Pranata (SMKS TI Airlangga — PPLG)
 **Repo:** https://github.com/offthemenus/portofolio-smkti
 **DB:** `portofolio` (Laragon / phpMyAdmin)
 
@@ -50,8 +49,3 @@ Tampil di tabel (`admin/creations.php:117+`):
 1. Import `schema.sql` + `seed.sql` di phpMyAdmin.
 2. Buka `admin/creations.php` → tabel 4 karya tampil.
 3. Hapus 1 baris di phpMyAdmin → refresh → berkurang (bukti dinamis dari DB).
-
-## 5. Lampiran Screenshot
-
-1. phpMyAdmin → DB `portofolio` + Structure tabel `creations`.
-2. `admin/creations.php` + section Karya di `index.php`.
